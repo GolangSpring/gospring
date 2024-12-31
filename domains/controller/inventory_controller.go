@@ -3,15 +3,22 @@ package controller
 import (
 	"github.com/go-fuego/fuego"
 	"go-spring/domains/repository"
+	"go-spring/domains/service"
 )
 
 type InventoryResources struct {
 	// TODO add resources
-	InventoryService repository.IInventoryService
+	InventoryService service.IInventoryService
 }
 
-func (resource InventoryResources) Routes(s *fuego.Server) {
-	inventoryGroup := fuego.Group(s, "/inventory")
+func NewInventoryResources(inventoryService service.IInventoryService) InventoryResources {
+	return InventoryResources{
+		InventoryService: inventoryService,
+	}
+}
+
+func (resource InventoryResources) Routes(server *fuego.Server) {
+	inventoryGroup := fuego.Group(server, "/inventory")
 
 	fuego.Get(inventoryGroup, "/", resource.getAllInventory)
 	fuego.Post(inventoryGroup, "/", resource.postInventory)

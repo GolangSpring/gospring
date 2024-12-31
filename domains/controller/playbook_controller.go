@@ -7,7 +7,13 @@ import (
 )
 
 type PlaybookResources struct {
-	PlaybookService service.PlaybookService
+	PlaybookService service.IPlaybookService
+}
+
+func NewPlaybookResources(playbookService service.IPlaybookService) PlaybookResources {
+	return PlaybookResources{
+		PlaybookService: playbookService,
+	}
 }
 
 func (resource PlaybookResources) Routes(s *fuego.Server) {

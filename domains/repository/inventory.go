@@ -30,11 +30,3 @@ func (inventory *Inventory) AsJson() map[string]map[string]any {
 
 	return converted
 }
-
-type IInventoryService interface {
-	GetInventory(id string) (*Inventory, error)
-	CreateInventory(inventory *Inventory) (*Inventory, error)
-	GetAllInventory() ([]*Inventory, error)
-	UpdateInventory(id string, inventory *Inventory) (*Inventory, error)
-	DeleteInventory(id string) (any, error)
-}

@@ -14,6 +14,14 @@ type IPlaybookService interface {
 
 type PlaybookService struct{}
 
+func (service PlaybookService) PostConstruct() {
+
+}
+
+func NewPlaybookService() *PlaybookService {
+	return &PlaybookService{}
+}
+
 func (service PlaybookService) GetPlaybook(id string) (*repository.Playbook, error) {
 	//TODO implement me
 

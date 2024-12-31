@@ -88,7 +88,7 @@ func (executor *PlaybookExecutor) runCommand(ctx context.Context, streamId strin
 
 	select {
 	case <-ctx.Done():
-		return fmt.Errorf("context cancelled")
+		return fmt.Errorf("ansible cancelled")
 	default:
 		cmd := exec.Command(command, args...)
 
