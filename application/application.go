@@ -55,7 +55,7 @@ func (app *Application) registerControllerRoutes() {
 	for _, _context := range app.ContextCollection {
 		for _, _controller := range _context.Controllers {
 			log.Info().Msgf("Registering routes for web: %s", reflect.TypeOf(_controller).String())
-			_controller.RegisterRoutes()
+			_controller.Routes(app.Server)
 		}
 	}
 
