@@ -45,10 +45,12 @@ func (app *Application) GetContext(contextName string) *ApplicationContext {
 func MustNewApplication(config *Config) *Application {
 	withAddr := fuego.WithAddr(fmt.Sprintf("%s:%d", config.ServerConfig.Address, config.ServerConfig.Port))
 	_server := fuego.NewServer(withAddr)
-	return &Application{
+	app := &Application{
 		AppConfig: config,
 		Server:    _server,
 	}
+	app.setupLogger()
+	return app
 }
 
 func (app *Application) registerControllerRoutes() {
@@ -72,7 +74,6 @@ func (app *Application) postConstructServices() {
 }
 
 func (app *Application) Run() {
-	app.setupLogger()
 	log.Info().Msg("Starting application...")
 	fmt.Printf("%s\n", app.AppConfig.AsJson())
 	app.postConstructServices()
