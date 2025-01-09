@@ -1,6 +1,9 @@
 package postgres
 
-import "go-spring/application"
+import (
+	"go-spring/application"
+	"log"
+)
 
 var ContextName = "PostgresApplicationContext"
 
@@ -8,7 +11,7 @@ func MustNewPostgresApplicationContext(config *PostgresDataSourceConfig) *applic
 
 	engineService, err := NewPostgresEngineService(config)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to create Postgres engine service: %v", err)
 	}
 
 	return &application.ApplicationContext{
