@@ -2,10 +2,13 @@ package application
 
 import (
 	"encoding/json"
+	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
-	ServerConfig *ServerConfig `yaml:"server"`
+	ServerConfig *ServerConfig `yaml:"server" validate:"required"`
+	LogConfig    *LogConfig    `yaml:"log" validate:"required"`
 }
 
 func (config *Config) AsJson() string {
@@ -17,5 +20,11 @@ func (config *Config) AsJson() string {
 }
 
 func MustNewAppConfig(configPath string) *Config {
-	return MustNewConfigFromFile[Config](configPath)
+	config := MustNewConfigFromFile[Config](configPath)
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(config)
+	if err != nil {
+		log.Fatal().Msgf("Failed to validate config: %v", err)
+	}
+	return config
 }

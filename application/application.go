@@ -5,6 +5,8 @@ import (
 	"github.com/go-fuego/fuego"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"gopkg.in/natefinch/lumberjack.v2"
+	"io"
 	"os"
 	"reflect"
 	"time"
@@ -17,12 +19,47 @@ type Application struct {
 }
 
 func (app *Application) setupLogger() {
-	consoleWriter := zerolog.ConsoleWriter{
-		Out:        os.Stdout,
-		TimeFormat: time.RFC3339, // Optional: specify the time format
+	zerolog.TimestampFunc = func() time.Time {
+		return time.Now().UTC()
 	}
+
+	consoleWriter := zerolog.ConsoleWriter{
+		Out:          os.Stdout,
+		TimeFormat:   time.DateTime,
+		TimeLocation: time.UTC,
+	}
+	logConfig := app.AppConfig.LogConfig
+
+	var consoleLogWriter io.Writer
+	switch logConfig.LogMode {
+	case LogModeJson:
+		log.Info().Msg("Setting up JSON logger")
+		consoleLogWriter = &lumberjack.Logger{
+			Filename:   logConfig.FileName,
+			MaxSize:    logConfig.MaxSize,
+			MaxBackups: logConfig.MaxBackups,
+			MaxAge:     logConfig.MaxAge,
+			Compress:   logConfig.Compress,
+			LocalTime:  false,
+		}
+	case LogModeText:
+		log.Info().Msg("Setting up text logger")
+		consoleLogWriter = zerolog.ConsoleWriter{
+			Out: &lumberjack.Logger{
+				Filename:   logConfig.FileName,
+				MaxSize:    logConfig.MaxSize,
+				MaxBackups: logConfig.MaxBackups,
+				MaxAge:     logConfig.MaxAge,
+				Compress:   logConfig.Compress,
+			},
+			NoColor:      true,
+			TimeFormat:   time.DateTime,
+			TimeLocation: time.UTC,
+		}
+	}
+	multiWriter := zerolog.MultiLevelWriter(consoleWriter, consoleLogWriter)
 	// Set the global logger to use the console writer
-	log.Logger = zerolog.New(consoleWriter).With().Timestamp().Logger()
+	log.Logger = zerolog.New(multiWriter).With().Timestamp().Logger()
 }
 
 func (app *Application) InjectContextCollection(appContextCollection ...*ApplicationContext) {
