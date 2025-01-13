@@ -3,8 +3,8 @@ package application
 import "github.com/go-fuego/fuego"
 
 type ServerConfig struct {
-	Address string `yaml:"address"`
-	Port    int    `yaml:"port"`
+	Address string `yaml:"address" validate:"required"`
+	Port    int    `yaml:"port" validate:"required"`
 }
 
 type IController interface {
