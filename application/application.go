@@ -8,6 +8,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
 	"os"
+	"path/filepath"
 	"reflect"
 	"time"
 )
@@ -59,7 +60,12 @@ func (app *Application) setupLogger() {
 	}
 	multiWriter := zerolog.MultiLevelWriter(consoleWriter, consoleLogWriter)
 	// Set the global logger to use the console writer
-	log.Logger = zerolog.New(multiWriter).With().Timestamp().Logger()
+	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
+		shortFileName := filepath.Base(file)
+		return fmt.Sprintf("%s:%d", shortFileName, line)
+	}
+
+	log.Logger = zerolog.New(multiWriter).With().Timestamp().Caller().Logger()
 }
 
 func (app *Application) InjectContextCollection(appContextCollection ...*ApplicationContext) {
