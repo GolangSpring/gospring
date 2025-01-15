@@ -106,6 +106,19 @@ func (app *Application) registerControllerRoutes() {
 
 }
 
+func (app *Application) registerControllerMiddlewares() {
+	for _, _context := range app.ContextCollection {
+		for _, _controller := range _context.Controllers {
+			log.Info().Msgf("Registering middleware for web: %s", reflect.TypeOf(_controller).String())
+			for _, middleware := range _controller.Middlewares() {
+				fuego.Use(app.Server, middleware)
+			}
+
+		}
+	}
+
+}
+
 func (app *Application) postConstructServices() {
 	for _, _context := range app.ContextCollection {
 		for _, _service := range _context.Services {
@@ -120,7 +133,9 @@ func (app *Application) Run() {
 	log.Info().Msg("Starting application...")
 	fmt.Printf("%s\n", app.AppConfig.AsJson())
 	app.postConstructServices()
+	app.registerControllerMiddlewares()
 	app.registerControllerRoutes()
+
 	err := app.Server.Run()
 	if err != nil {
 		log.Fatal().Msgf("Failed to start server: %v", err)
