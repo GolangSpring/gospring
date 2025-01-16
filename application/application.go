@@ -7,16 +7,58 @@ import (
 	"github.com/rs/zerolog/log"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
 	"time"
 )
 
+type ResponseWriterWrapper struct {
+	http.ResponseWriter
+	StatusCode int
+}
+
+func (wrapper *ResponseWriterWrapper) WriteHeader(statusCode int) {
+	wrapper.StatusCode = statusCode
+	wrapper.ResponseWriter.WriteHeader(statusCode)
+}
+
 type Application struct {
 	ContextCollection []*ApplicationContext
 	AppConfig         *Config
 	Server            *fuego.Server
+}
+
+func (app *Application) LoggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+
+		// Wrap the ResponseWriter to capture the status code
+		wrapper := &ResponseWriterWrapper{ResponseWriter: w, StatusCode: http.StatusOK}
+
+		next.ServeHTTP(wrapper, r)
+		// Log the request details
+
+		statusCode := wrapper.StatusCode
+		logger := log.Info() // Default log level
+
+		switch {
+		case statusCode >= 500:
+			logger = log.Error() // Server errors
+		case statusCode >= 400:
+			logger = log.Warn() // Client errors
+		}
+
+		logger.
+			Str("method", r.Method).
+			Str("url", r.URL.String()).
+			Str("remote_addr", r.RemoteAddr).
+			Int("status", statusCode).
+			Str("user_agent", r.UserAgent()).
+			Dur("duration", time.Since(start)).
+			Msg("Request processed")
+	})
 }
 
 func (app *Application) setupLogger() {
@@ -58,6 +100,7 @@ func (app *Application) setupLogger() {
 			TimeLocation: time.UTC,
 		}
 	}
+
 	multiWriter := zerolog.MultiLevelWriter(consoleWriter, consoleLogWriter)
 	// Set the global logger to use the console writer
 	zerolog.CallerMarshalFunc = func(pc uintptr, file string, line int) string {
@@ -130,6 +173,8 @@ func (app *Application) postConstructServices() {
 }
 
 func (app *Application) Run() {
+	fuego.Use(app.Server, app.LoggingMiddleware)
+
 	log.Info().Msg("Starting application...")
 	fmt.Printf("%s\n", app.AppConfig.AsJson())
 	app.postConstructServices()

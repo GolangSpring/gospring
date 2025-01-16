@@ -13,12 +13,6 @@ type IUserRepository interface {
 	DeleteByID(ctx context.Context, id uint) error
 	FindByEmail(ctx context.Context, email string) (*User, error)
 	FindByUserName(ctx context.Context, name string) (*User, error)
-	//AddRole(ctx context.Context, role *UserRole) error
-	//AddPlatform(ctx context.Context, platform *Platform) error
-	//FindPlatformByName(ctx context.Context, platformName string) (*Platform, error)
-	//FindPlatformByID(ctx context.Context, platformID uint) (*Platform, error)
-	//FindAllRoles(ctx context.Context) ([]*UserRole, error)
-	//FindRoleByName(ctx context.Context, name string) (*UserRole, error)
 	UpdateUserPassword(ctx context.Context, user *User, password string) error
 	ActivateUser(ctx context.Context, user *User) error
 	UpdateUserRoles(ctx context.Context, user *User, roles []string) error
@@ -30,41 +24,9 @@ type UserRepository struct {
 	Engine *gorm.DB
 }
 
-//func (repo *UserRepository) FindPlatformByID(ctx context.Context, platformID uint) (*Platform, error) {
-//	var platform Platform
-//	err := repo.Engine.WithContext(ctx).First(&platform, platformID).Error
-//	return &platform, err
-//}
-
-//func (repo *UserRepository) FindPlatformByName(ctx context.Context, platformName string) (*Platform, error) {
-//	var platform Platform
-//	err := repo.Engine.WithContext(ctx).First(&platform, "name = ?", platformName).Error
-//	return &platform, err
-//}
-
-//func (repo *UserRepository) AddPlatform(ctx context.Context, platform *Platform) error {
-//	return repo.Engine.WithContext(ctx).Create(platform).Error
-//}
-
 func (repo *UserRepository) ActivateUser(ctx context.Context, user *User) error {
 	return repo.Engine.WithContext(ctx).Model(user).Update("is_verified", true).Error
 }
-
-//func (repo *UserRepository) AddRole(ctx context.Context, role *UserRole) error {
-//	return repo.Engine.WithContext(ctx).Create(role).Error
-//}
-
-//func (repo *UserRepository) FindAllRoles(ctx context.Context) ([]*UserRole, error) {
-//	var roles []*UserRole
-//	err := repo.Engine.WithContext(ctx).Find(&roles).Error
-//	return roles, err
-//}
-//
-//func (repo *UserRepository) FindRoleByName(ctx context.Context, name string) (*UserRole, error) {
-//	var role UserRole
-//	err := repo.Engine.WithContext(ctx).First(&role, "name = ?", name).Error
-//	return &role, err
-//}
 
 func (repo *UserRepository) createPreloadTx(ctx context.Context) *gorm.DB {
 	return repo.Engine.WithContext(ctx)

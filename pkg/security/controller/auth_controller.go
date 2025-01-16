@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+const CookieKey = "token"
+
 type LoginBody struct {
 	UserName string `json:"user_name"`
 	Email    string `json:"email"`
@@ -41,9 +43,19 @@ func NewAuthController(authService service.IAuthService, casbinService *service.
 }
 
 func (controller *AuthController) Routes(server *fuego.Server) {
+	fuego.Post(server, "/api-admin/assign-roles", controller.AssignRoles)
+	fuego.Get(server, "/api-admin/all-roles", controller.AllRoles)
+
+	fuego.Get(server, "/api-private/current-user", controller.CurrentUser)
+	fuego.Get(server, "/api-private/logout", controller.Logout)
+
 	fuego.Post(server, "/api-public/login", controller.Login)
 	fuego.Post(server, "/api-public/register", controller.RegisterUser)
-	fuego.Post(server, "/api-admin/assign-roles", controller.AssignRoles)
+	fuego.Get(server, "/api-public/health", controller.Health)
+}
+
+func (controller *AuthController) Health(c fuego.ContextNoBody) (any, error) {
+	return "OK", nil
 }
 
 func (controller *AuthController) Login(c fuego.ContextWithBody[LoginBody]) (*http.Response, error) {
@@ -67,13 +79,14 @@ func (controller *AuthController) Login(c fuego.ContextWithBody[LoginBody]) (*ht
 		}
 	}
 	responseCookie := http.Cookie{
-		Name:  "token",
-		Value: token,
-		Path:  "/",
+		Name:     CookieKey,
+		Value:    token,
+		Path:     "/",
+		HttpOnly: true,
 	}
 	c.SetCookie(responseCookie)
 
-	return &http.Response{StatusCode: http.StatusNoContent}, nil
+	return &http.Response{StatusCode: http.StatusNoContent, Status: token}, nil
 }
 
 func (controller *AuthController) RegisterUser(c fuego.ContextWithBody[UserCredentials]) (any, error) {
@@ -117,4 +130,34 @@ func (controller *AuthController) AssignRoles(c fuego.ContextWithBody[RoleAssign
 		}
 	}
 	return user, nil
+}
+
+func (controller *AuthController) Logout(c fuego.ContextNoBody) (*http.Response, error) {
+	cookie := http.Cookie{
+		Name:     CookieKey,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	}
+	c.SetCookie(cookie)
+
+	return &http.Response{StatusCode: http.StatusNoContent}, nil
+}
+
+func (controller *AuthController) CurrentUser(c fuego.ContextNoBody) (*service.UserClaims, error) {
+	user, ok := c.Request().Context().Value("user").(*service.UserClaims)
+	if !ok {
+		return nil, fuego.HTTPError{
+			Detail: "User not found within context",
+			Status: http.StatusUnauthorized,
+		}
+	}
+
+	return user, nil
+
+}
+
+func (controller *AuthController) AllRoles(c fuego.ContextNoBody) ([]string, error) {
+	return controller.CasbinService.GetAllUsedRoles()
 }

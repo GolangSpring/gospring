@@ -33,7 +33,7 @@ func NewPostgresEngineService(config *PostgresDataSourceConfig) (*PostgresEngine
 func (postgresConfig *PostgresDataSourceConfig) AsDSN() string {
 	config := postgresConfig.Postgres
 	return fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=prefer",
 		config.Host, config.Port, config.User, config.Password, config.DatabaseName,
 	)
 }
