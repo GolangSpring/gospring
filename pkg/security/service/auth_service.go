@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
+	. "github.com/GolangSpring/gospring/pkg/security/repository"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
-	. "go-spring/pkg/security/repository"
 	"golang.org/x/crypto/bcrypt"
 	"time"
 )

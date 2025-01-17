@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"context"
-	"go-spring/pkg/security/service"
+	"github.com/GolangSpring/gospring/pkg/security/service"
 	"net/http"
 )
 

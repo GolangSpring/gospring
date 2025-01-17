@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"fmt"
-	"go-spring/application"
+	"github.com/GolangSpring/gospring/application"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )

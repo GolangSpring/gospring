@@ -1,11 +1,12 @@
 package controller
 
 import (
+	"github.com/GolangSpring/gospring/application"
+	"github.com/GolangSpring/gospring/pkg/security/middleware"
+	"github.com/GolangSpring/gospring/pkg/security/repository"
+	"github.com/GolangSpring/gospring/pkg/security/service"
 	"github.com/go-fuego/fuego"
-	"go-spring/application"
-	"go-spring/pkg/security/middleware"
-	"go-spring/pkg/security/repository"
-	"go-spring/pkg/security/service"
+
 	"net/http"
 )
 

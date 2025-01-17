@@ -1,15 +1,16 @@
 package security
 
 import (
+	"github.com/GolangSpring/gospring/application"
+	"github.com/GolangSpring/gospring/pkg/postgres"
+	"github.com/GolangSpring/gospring/pkg/security/controller"
+	securityRepository "github.com/GolangSpring/gospring/pkg/security/repository"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 	"github.com/rs/zerolog/log"
-	"go-spring/application"
-	"go-spring/pkg/postgres"
-	"go-spring/pkg/security/controller"
-	securityRepository "go-spring/pkg/security/repository"
-	securityService "go-spring/pkg/security/service"
+
+	securityService "github.com/GolangSpring/gospring/pkg/security/service"
 )
 
 var ContextName = "SecurityApplicationContext"

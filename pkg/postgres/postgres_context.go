@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"go-spring/application"
+	"github.com/GolangSpring/gospring/application"
 	"log"
 )
 

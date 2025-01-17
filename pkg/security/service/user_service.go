@@ -2,8 +2,8 @@ package service
 
 import (
 	"context"
-	"go-spring/application"
-	. "go-spring/pkg/security/repository"
+	"github.com/GolangSpring/gospring/application"
+	. "github.com/GolangSpring/gospring/pkg/security/repository"
 )
 
 type IUserService interface {

@@ -1,6 +1,6 @@
 package security
 
-import "go-spring/application"
+import "github.com/GolangSpring/gospring/application"
 
 type SecurityConfig struct {
 	Security struct {
