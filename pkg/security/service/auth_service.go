@@ -54,12 +54,8 @@ type IAuthService interface {
 	IssueJsonWebToken(claims *jwt.MapClaims) string
 	IssueLoginToken(user *User, expiration time.Duration) (string, error)
 	ExtractUserClaims(claims *jwt.MapClaims) (*UserClaims, error)
-	DecodeJsonWebTokenWithSecret(rawToken string, secret []byte) (*jwt.Token, error)
-	DecodeJsonWebToken(rawToken string) (*jwt.Token, error)
-	ParseUserClaims(tokenString string) (*UserClaims, error)
-	GenerateHashedPassword(password string) (string, error)
-	VerifyPassword(password, hashedPassword string) error
 
+	ParseUserClaims(tokenString string) (*UserClaims, error)
 	RegisterUser(ctx context.Context, name string, email string, password string) (*User, error)
 	AssignRoles(ctx context.Context, userID uint, roles []string) (*User, error)
 }
