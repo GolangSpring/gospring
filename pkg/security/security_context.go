@@ -24,11 +24,11 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 
 	models := []any{securityRepository.User{}}
 
-	if err = (*service).MigrateModels(models...); err != nil {
+	if err = service.MigrateModels(models...); err != nil {
 		log.Fatal().Msgf("Failed to migrate models: %v", err)
 	}
 
-	adapter, err := gormadapter.NewAdapterByDB((*service).Engine)
+	adapter, err := gormadapter.NewAdapterByDB(service.Engine)
 	if err != nil {
 		log.Fatal().Msgf("Failed to create Casbin adapter: %v", err)
 	}
@@ -45,7 +45,7 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 
 	casbinService := securityService.NewCasbinService(enforcer)
 
-	engine := (*service).Engine
+	engine := service.Engine
 	userRepo := securityRepository.NewUserRepository(engine)
 	userService := securityService.NewUserService(userRepo)
 	authService := securityService.NewAuthService(userService, securityConfig.Security.Secret)
@@ -57,6 +57,8 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 		Name: ContextName,
 		Services: []application.IService{
 			casbinService,
+			userService,
+			authService,
 		},
 		Controllers: []application.IController{
 			authController,

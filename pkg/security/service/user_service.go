@@ -12,6 +12,7 @@ type IUserService interface {
 	FindByUserName(ctx context.Context, name string) (*User, error)
 	FindByID(ctx context.Context, id uint) (*User, error)
 	UpdateUserRoles(ctx context.Context, userID uint, roles []string) (*User, error)
+	UpdateUserPassword(ctx context.Context, userID uint, password string) (*User, error)
 }
 
 var _ application.IService = (*UserService)(nil)
@@ -19,6 +20,16 @@ var _ IUserService = (*UserService)(nil)
 
 type UserService struct {
 	Repository IUserRepository
+}
+
+func (service *UserService) UpdateUserPassword(ctx context.Context, userID uint, password string) (*User, error) {
+	user, err := service.Repository.FindByID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Password = password
+	return user, service.Repository.UpdateUserPassword(ctx, user, password)
 }
 
 func (service *UserService) FindByID(ctx context.Context, id uint) (*User, error) {

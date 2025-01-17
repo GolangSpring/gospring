@@ -67,6 +67,8 @@ type AuthService struct {
 	UserService IUserService
 }
 
+func (service *AuthService) PostConstruct() {}
+
 func (service *AuthService) AssignRoles(ctx context.Context, userID uint, roles []string) (*User, error) {
 	return service.UserService.UpdateUserRoles(ctx, userID, roles)
 }

@@ -12,14 +12,15 @@ type ApplicationContext struct {
 	Services    []IService
 }
 
-func GetServiceFromContext[T IService](ctx *ApplicationContext) (*T, error) {
+func GetServiceFromContext[T IService](ctx *ApplicationContext) (T, error) {
+	var zeroValue T
 	for _, service := range ctx.Services {
 		// Check if the type matches T
 		if serviceFound, ok := service.(T); ok {
-			return &serviceFound, nil
+			return serviceFound, nil
 		}
 	}
-	return nil, errors.New("service not found")
+	return zeroValue, errors.New("service not found")
 }
 
 func (ctx *ApplicationContext) GetService(serviceType IService) (IService, error) {
