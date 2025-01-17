@@ -1,12 +1,12 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/GolangSpring/gospring/application"
 	"github.com/GolangSpring/gospring/pkg/security/middleware"
 	"github.com/GolangSpring/gospring/pkg/security/repository"
 	"github.com/GolangSpring/gospring/pkg/security/service"
 	"github.com/go-fuego/fuego"
-
 	"net/http"
 )
 
@@ -52,11 +52,11 @@ func (controller *AuthController) Routes(server *fuego.Server) {
 
 	fuego.Post(server, "/api-public/login", controller.Login)
 	fuego.Post(server, "/api-public/register", controller.RegisterUser)
-	fuego.Get(server, "/api-public/health", controller.Health)
 }
 
-func (controller *AuthController) Health(c fuego.ContextNoBody) (any, error) {
-	return "OK", nil
+func (controller *AuthController) Health(c fuego.ContextNoBody) (string, error) {
+
+	return fmt.Sprintf("%s, ok"), nil
 }
 
 func (controller *AuthController) Login(c fuego.ContextWithBody[LoginBody]) (*http.Response, error) {

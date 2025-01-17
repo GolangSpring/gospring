@@ -51,6 +51,7 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 	authService := securityService.NewAuthService(userService, securityConfig.Security.Secret)
 	authController := controller.NewAuthController(authService, casbinService)
 	casbinController := controller.NewCasbinController(casbinService, authService)
+	systemController := controller.NewSystemController()
 
 	return &application.ApplicationContext{
 		Name: ContextName,
@@ -60,6 +61,7 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 		Controllers: []application.IController{
 			authController,
 			casbinController,
+			systemController,
 		},
 	}
 }
