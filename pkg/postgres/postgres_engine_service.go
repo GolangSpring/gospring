@@ -9,12 +9,12 @@ import (
 
 type PostgresDataSourceConfig struct {
 	Postgres struct {
-		Host         string `yaml:"host"`
-		Port         int    `yaml:"port"`
-		User         string `yaml:"user"`
-		Password     string `yaml:"password"`
-		DatabaseName string `yaml:"db_name"`
-	} `yaml:"postgres"`
+		Host         string `yaml:"host" validate:"required"`
+		Port         int    `yaml:"port" validate:"required"`
+		User         string `yaml:"user" validate:"required"`
+		Password     string `yaml:"password" validate:"required"`
+		DatabaseName string `yaml:"db_name" validate:"required"`
+	} `yaml:"postgres" validate:"required"`
 }
 
 func MustNewPostgresDataSourceConfig(configPath string) *PostgresDataSourceConfig {
