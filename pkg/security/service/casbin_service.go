@@ -2,6 +2,8 @@ package service
 
 import (
 	"github.com/casbin/casbin/v2"
+	"github.com/rs/zerolog/log"
+	"time"
 )
 
 const (
@@ -35,7 +37,21 @@ func NewCasbinService(enforcer *casbin.Enforcer) *CasbinService {
 	return service
 }
 
-func (service *CasbinService) PostConstruct() {}
+func (service *CasbinService) PostConstruct() {
+	service.PollingSyncingPolicy()
+}
+
+func (service *CasbinService) PollingSyncingPolicy() {
+	log.Info().Msg("Start syncing policy for every 60 seconds")
+	go func() {
+		for {
+			time.Sleep(10 * time.Second)
+			if err := service.Enforcer.LoadPolicy(); err != nil {
+				log.Warn().Msgf("Failed to sync policy: %v", err)
+			}
+		}
+	}()
+}
 
 func (service *CasbinService) HasPermission(subject, object, action string) (bool, error) {
 	return service.Enforcer.Enforce(subject, object, action)
