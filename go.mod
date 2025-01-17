@@ -1,4 +1,4 @@
-module go-spring
+module github.com/GolangSpring/gospring
 
 go 1.23.4
 
