@@ -72,29 +72,23 @@ func (app *Application) setupLogger() {
 		TimeLocation: time.UTC,
 	}
 	logConfig := app.AppConfig.LogConfig
+	fileLogger := &lumberjack.Logger{
+		Filename:   logConfig.FileName,
+		MaxSize:    logConfig.MaxSize,
+		MaxBackups: logConfig.MaxBackups,
+		MaxAge:     logConfig.MaxAge,
+		Compress:   logConfig.Compress,
+	}
 
 	var consoleLogWriter io.Writer
 	switch logConfig.LogMode {
 	case LogModeJson:
 		log.Info().Msg("Setting up JSON logger")
-		consoleLogWriter = &lumberjack.Logger{
-			Filename:   logConfig.FileName,
-			MaxSize:    logConfig.MaxSize,
-			MaxBackups: logConfig.MaxBackups,
-			MaxAge:     logConfig.MaxAge,
-			Compress:   logConfig.Compress,
-			LocalTime:  false,
-		}
+		consoleLogWriter = fileLogger
 	case LogModeText:
 		log.Info().Msg("Setting up text logger")
 		consoleLogWriter = zerolog.ConsoleWriter{
-			Out: &lumberjack.Logger{
-				Filename:   logConfig.FileName,
-				MaxSize:    logConfig.MaxSize,
-				MaxBackups: logConfig.MaxBackups,
-				MaxAge:     logConfig.MaxAge,
-				Compress:   logConfig.Compress,
-			},
+			Out:          fileLogger,
 			NoColor:      true,
 			TimeFormat:   time.DateTime,
 			TimeLocation: time.UTC,
