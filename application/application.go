@@ -2,63 +2,22 @@ package application
 
 import (
 	"fmt"
+	appMiddleware "github.com/GolangSpring/gospring/application/app_middleware"
 	"github.com/go-fuego/fuego"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/natefinch/lumberjack.v2"
 	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
 	"time"
 )
 
-type ResponseWriterWrapper struct {
-	http.ResponseWriter
-	StatusCode int
-}
-
-func (wrapper *ResponseWriterWrapper) WriteHeader(statusCode int) {
-	wrapper.StatusCode = statusCode
-	wrapper.ResponseWriter.WriteHeader(statusCode)
-}
-
 type Application struct {
 	ContextCollection []*ApplicationContext
 	AppConfig         *Config
 	Server            *fuego.Server
-}
-
-func (app *Application) LoggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-
-		// Wrap the ResponseWriter to capture the status code
-		wrapper := &ResponseWriterWrapper{ResponseWriter: w, StatusCode: http.StatusOK}
-
-		next.ServeHTTP(wrapper, r)
-		// Log the request details
-
-		statusCode := wrapper.StatusCode
-		logger := log.Info() // Default log level
-
-		switch {
-		case statusCode >= 500:
-			logger = log.Error() // Server errors
-		case statusCode >= 400:
-			logger = log.Warn() // Client errors
-		}
-
-		logger.
-			Str("method", r.Method).
-			Str("url", r.URL.String()).
-			Str("remote_addr", r.RemoteAddr).
-			Int("status", statusCode).
-			Str("user_agent", r.UserAgent()).
-			Dur("duration", time.Since(start)).
-			Msg("Request processed")
-	})
 }
 
 func (app *Application) setupLogger() {
@@ -83,10 +42,8 @@ func (app *Application) setupLogger() {
 	var consoleLogWriter io.Writer
 	switch logConfig.LogMode {
 	case LogModeJson:
-		log.Info().Msg("Setting up JSON logger")
 		consoleLogWriter = fileLogger
 	case LogModeText:
-		log.Info().Msg("Setting up text logger")
 		consoleLogWriter = zerolog.ConsoleWriter{
 			Out:          fileLogger,
 			NoColor:      true,
@@ -165,11 +122,16 @@ func (app *Application) postConstructServices() {
 	}
 	log.Info().Msg("PostConstruct for all services completed")
 }
+func (app *Application) registerAppMiddlewares() {
+	log.Info().Msg("Registering application middlewares")
+	fuego.Use(app.Server, appMiddleware.LoggingMiddleware)
+
+}
 
 func (app *Application) Run() {
-	fuego.Use(app.Server, app.LoggingMiddleware)
 
 	log.Info().Msg("Starting application...")
+	app.registerAppMiddlewares()
 	fmt.Printf("%s\n", app.AppConfig.AsJson())
 	app.postConstructServices()
 	app.registerControllerMiddlewares()
