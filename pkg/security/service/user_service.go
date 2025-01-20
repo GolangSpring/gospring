@@ -7,69 +7,54 @@ import (
 )
 
 type IUserService interface {
+	IUserRepository
+	UpdateUserRolesByUserID(ctx context.Context, userID uint, roles []string) (*User, error)
 	AddUser(ctx context.Context, user *User) error
-	FindByEmail(ctx context.Context, email string) (*User, error)
-	FindByUserName(ctx context.Context, name string) (*User, error)
-	FindByID(ctx context.Context, id uint) (*User, error)
-	UpdateUserRoles(ctx context.Context, userID uint, roles []string) (*User, error)
-	UpdateUserPassword(ctx context.Context, userID uint, password string) (*User, error)
+}
+
+func NewUserService(repository IUserRepository) *UserService {
+	return &UserService{
+		IUserRepository: repository,
+	}
 }
 
 var _ application.IService = (*UserService)(nil)
 var _ IUserService = (*UserService)(nil)
 
 type UserService struct {
-	Repository IUserRepository
+	IUserRepository
 }
 
-func (service *UserService) UpdateUserPassword(ctx context.Context, userID uint, password string) (*User, error) {
-	user, err := service.Repository.FindByID(ctx, userID)
+func (service *UserService) UpdateUserPasswordByUserID(ctx context.Context, userID uint, password string) error {
+	user, err := service.FindByID(ctx, userID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	user.Password = password
-	return user, service.Repository.UpdateUserPassword(ctx, user, password)
-}
-
-func (service *UserService) FindByID(ctx context.Context, id uint) (*User, error) {
-	return service.Repository.FindByID(ctx, id)
-}
-
-func (service *UserService) FindByUserName(ctx context.Context, name string) (*User, error) {
-	return service.Repository.FindByUserName(ctx, name)
-}
-
-func (service *UserService) FindByEmail(ctx context.Context, email string) (*User, error) {
-	return service.Repository.FindByEmail(ctx, email)
+	return service.IUserRepository.UpdateUserPassword(ctx, user, password)
 }
 
 func (service *UserService) AddUser(ctx context.Context, user *User) error {
-	userFound, err := service.Repository.FindByID(ctx, user.ID)
+	userFound, err := service.FindByID(ctx, user.ID)
 	if err == nil && userFound != nil {
 		return UserExists
 	}
 
-	if err = service.Repository.Save(ctx, user); err != nil {
+	if err = service.Save(ctx, user); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (service *UserService) UpdateUserRoles(ctx context.Context, userID uint, roles []string) (*User, error) {
-	user, err := service.Repository.FindByID(ctx, userID)
+func (service *UserService) UpdateUserRolesByUserID(ctx context.Context, userID uint, roles []string) (*User, error) {
+	user, err := service.FindByID(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 
 	user.Roles = roles
-	return user, service.Repository.UpdateUserRoles(ctx, user, roles)
+	return user, service.UpdateUserRoles(ctx, user, roles)
 }
 
 func (service *UserService) PostConstruct() {}
-
-func NewUserService(repository IUserRepository) *UserService {
-	return &UserService{
-		Repository: repository,
-	}
-}

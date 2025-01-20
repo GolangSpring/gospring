@@ -70,7 +70,7 @@ type AuthService struct {
 func (service *AuthService) PostConstruct() {}
 
 func (service *AuthService) AssignRoles(ctx context.Context, userID uint, roles []string) (*User, error) {
-	return service.UserService.UpdateUserRoles(ctx, userID, roles)
+	return service.UserService.UpdateUserRolesByUserID(ctx, userID, roles)
 }
 
 func NewAuthService(userService IUserService, secret string) *AuthService {
