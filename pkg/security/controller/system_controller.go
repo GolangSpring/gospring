@@ -8,6 +8,7 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/mem"
 	"net/http"
+	"os"
 )
 
 var _ application.IController = (*SystemController)(nil)
@@ -17,7 +18,12 @@ func formatPercentage(value float64) string {
 }
 
 func GetSystemMetrics() map[string]string {
+	hostName, err := os.Hostname()
+	if err != nil {
+		hostName = "unknown"
+	}
 	metrics := make(map[string]string)
+	metrics["hostname"] = hostName
 
 	cpuPercentages, err := cpu.Percent(0, false)
 	if err == nil && len(cpuPercentages) > 0 {
