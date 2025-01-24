@@ -8,12 +8,12 @@ import (
 )
 
 func MustNewConfigFromFile[T any](configPath string) *T {
-	file, err := os.ReadFile(configPath)
+	fileContent, err := os.ReadFile(configPath)
 	if err != nil {
 		log.Fatal().Msgf("Failed to read config file: %v", err)
 	}
 	var config T
-	if err := yaml.Unmarshal(file, &config); err != nil {
+	if err := yaml.Unmarshal(fileContent, &config); err != nil {
 		log.Fatal().Msgf("Failed to unmarshal config: %v", err)
 	}
 

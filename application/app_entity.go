@@ -5,9 +5,17 @@ import (
 	"net/http"
 )
 
+type ServerMode string
+
+const (
+	Development ServerMode = "dev"
+	Production  ServerMode = "prod"
+)
+
 type ServerConfig struct {
-	Address string `yaml:"address" validate:"required"`
-	Port    int    `yaml:"port" validate:"required"`
+	Address string     `yaml:"address" validate:"required"`
+	Port    int        `yaml:"port" validate:"required"`
+	Mode    ServerMode `yaml:"mode" validate:"required,oneof=dev prod"`
 }
 
 type IController interface {

@@ -80,8 +80,16 @@ func (app *Application) GetContext(contextName string) *ApplicationContext {
 }
 
 func MustNewApplication(config *Config) *Application {
+
+	withOpenAIConfig := fuego.WithOpenAPIConfig(
+		fuego.OpenAPIConfig{
+			DisableLocalSave: true,
+			DisableSwagger:   config.ServerConfig.Mode == Production,
+		},
+	)
+
 	withAddr := fuego.WithAddr(fmt.Sprintf("%s:%d", config.ServerConfig.Address, config.ServerConfig.Port))
-	_server := fuego.NewServer(withAddr)
+	_server := fuego.NewServer(withAddr, withOpenAIConfig)
 	app := &Application{
 		AppConfig: config,
 		Server:    _server,
