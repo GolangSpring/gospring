@@ -3,14 +3,14 @@ package controller
 import (
 	"fmt"
 	"github.com/GolangSpring/gospring/application"
+	"github.com/GolangSpring/gospring/helper"
 	"github.com/GolangSpring/gospring/pkg/security/middleware"
 	"github.com/GolangSpring/gospring/pkg/security/repository"
 	"github.com/GolangSpring/gospring/pkg/security/service"
 	"github.com/go-fuego/fuego"
 	"net/http"
+	"time"
 )
-
-const CookieKey = "token"
 
 type LoginBody struct {
 	UserName string `json:"user_name"`
@@ -79,13 +79,9 @@ func (controller *AuthController) Login(c fuego.ContextWithBody[LoginBody]) (*ht
 			Status: http.StatusBadRequest,
 		}
 	}
-	responseCookie := http.Cookie{
-		Name:     CookieKey,
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-	}
-	c.SetCookie(responseCookie)
+
+	duration := time.Duration(24) * time.Hour
+	helper.WriteTokenCookie(c, token, duration)
 
 	return &http.Response{StatusCode: http.StatusNoContent, Status: token}, nil
 }
@@ -134,15 +130,7 @@ func (controller *AuthController) AssignRoles(c fuego.ContextWithBody[RoleAssign
 }
 
 func (controller *AuthController) Logout(c fuego.ContextNoBody) (*http.Response, error) {
-	cookie := http.Cookie{
-		Name:     CookieKey,
-		Value:    "",
-		Path:     "/",
-		MaxAge:   -1,
-		HttpOnly: true,
-	}
-	c.SetCookie(cookie)
-
+	helper.WriteTokenCookie(c, "", -1)
 	return &http.Response{StatusCode: http.StatusNoContent}, nil
 }
 
