@@ -34,25 +34,37 @@ func (repo *UserRepository) createPreloadTx(ctx context.Context) *gorm.DB {
 
 func (repo *UserRepository) FindByEmail(ctx context.Context, email string) (*User, error) {
 	var user User
-	tx := repo.createPreloadTx(ctx).First(&user, "email = ?", email)
-	return &user, tx.Error
+	err := repo.createPreloadTx(ctx).First(&user, "email = ?", email).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (repo *UserRepository) FindByUserName(ctx context.Context, name string) (*User, error) {
 	var user User
-	tx := repo.createPreloadTx(ctx).First(&user, "name = ?", name)
-	return &user, tx.Error
+	err := repo.createPreloadTx(ctx).First(&user, "name = ?", name).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
 
 func (repo *UserRepository) FindAll(ctx context.Context) ([]*User, error) {
 	var users []*User
 	err := repo.createPreloadTx(ctx).Find(&users).Error
-	return users, err
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (repo *UserRepository) FindByID(ctx context.Context, id uint) (*User, error) {
 	var user User
 	err := repo.createPreloadTx(ctx).First(&user, id).Error
+	if err != nil {
+		return nil, err
+	}
 	return &user, err
 }
 
