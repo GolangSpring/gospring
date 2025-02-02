@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"github.com/GolangSpring/gospring/pkg/security/service"
 	"net/http"
 )
@@ -32,7 +33,7 @@ func (middleware *AuthMiddleware) Middleware(next http.Handler) http.Handler {
 		// Add user info to the request context
 		userClaims, err := middleware.AuthService.ParseUserClaims(token.Value)
 		if err != nil {
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
+			http.Error(w, fmt.Sprintf("Invalid token: %v", err), http.StatusUnauthorized)
 			return
 		}
 		ctx := context.WithValue(r.Context(), "user", userClaims)
