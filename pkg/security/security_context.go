@@ -47,8 +47,16 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 
 	engine := service.Engine
 	userRepo := securityRepository.NewUserRepository(engine)
+
 	userService := securityService.NewUserService(userRepo)
 	authService := securityService.NewAuthService(userService, securityConfig.Security.Secret)
+
+	smtpService := securityService.NewSmtpService(securityConfig.Smtp)
+	otpService := securityService.NewOtpService(securityService.DefaultGenerateOtpCodeFunc)
+
+	_ = securityService.NewUserVerificationService(smtpService, userService, authService, otpService)
+	userResetPasswordService := securityService.NewUserResetPasswordService(smtpService, userService, authService, otpService)
+
 	authController := controller.NewAuthController(authService, casbinService)
 	casbinController := controller.NewCasbinController(casbinService, authService)
 	systemController := controller.NewSystemController()
@@ -59,6 +67,7 @@ func MustNewSecurityContext(securityConfig *SecurityConfig, postgresContext *app
 			casbinService,
 			userService,
 			authService,
+			userResetPasswordService,
 		},
 		Controllers: []application.IController{
 			authController,

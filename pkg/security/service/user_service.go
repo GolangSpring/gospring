@@ -10,6 +10,7 @@ type IUserService interface {
 	IUserRepository
 	UpdateUserRolesByUserID(ctx context.Context, userID uint, roles []string) (*User, error)
 	AddUser(ctx context.Context, user *User) error
+	ResetUserPassword(ctx context.Context, user *User, password string) error
 }
 
 func NewUserService(repository IUserRepository) *UserService {
@@ -23,6 +24,10 @@ var _ IUserService = (*UserService)(nil)
 
 type UserService struct {
 	IUserRepository
+}
+
+func (service *UserService) ResetUserPassword(ctx context.Context, user *User, password string) error {
+	return service.IUserRepository.UpdateUserPassword(ctx, user, password)
 }
 
 func (service *UserService) UpdateUserPasswordByUserID(ctx context.Context, userID uint, password string) error {

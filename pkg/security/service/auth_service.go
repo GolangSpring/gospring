@@ -58,6 +58,10 @@ type IAuthService interface {
 	ParseUserClaims(tokenString string) (*UserClaims, error)
 	RegisterUser(ctx context.Context, name string, email string, password string) (*User, error)
 	AssignRoles(ctx context.Context, userID uint, roles []string) (*User, error)
+
+	DecodeJsonWebTokenWithSecret(rawToken string, secret []byte) (*jwt.Token, error)
+	DecodeJsonWebToken(rawToken string) (*jwt.Token, error)
+	GenerateHashedPassword(password string) (string, error)
 }
 
 var _ IAuthService = (*AuthService)(nil)

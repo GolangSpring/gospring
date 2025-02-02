@@ -1,6 +1,7 @@
 package application
 
 import (
+	"errors"
 	"fmt"
 	appMiddleware "github.com/GolangSpring/gospring/application/app_middleware"
 	"github.com/go-fuego/fuego"
@@ -18,6 +19,36 @@ type Application struct {
 	ContextCollection []*ApplicationContext
 	AppConfig         *Config
 	Server            *fuego.Server
+}
+
+func (app *Application) CheckInterfaceNilValues(interfaceType any) error {
+	// Ensure the input is a struct or pointer to struct
+	objectValue := reflect.ValueOf(interfaceType)
+	if objectValue.Kind() == reflect.Ptr || objectValue.Kind() == reflect.Interface {
+		objectValue = objectValue.Elem()
+	}
+	if objectValue.Kind() != reflect.Struct {
+		return errors.New("input must be a struct or pointer to struct")
+	}
+
+	objectType := objectValue.Type()
+
+	for idx := 0; idx < objectType.NumField(); idx++ {
+		field := objectType.Field(idx)
+		value := objectValue.Field(idx)
+
+		// Skip unexported fields
+		if !value.CanInterface() {
+			continue
+		}
+
+		// Check if the field is nil for pointers, interfaces, or slices
+		if (value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface || value.Kind() == reflect.Slice) && value.IsNil() {
+			return fmt.Errorf("field '%s' is nil", field.Name)
+		}
+	}
+
+	return nil
 }
 
 func (app *Application) setupLogger() {
@@ -133,11 +164,31 @@ func (app *Application) postConstructServices() {
 func (app *Application) registerAppMiddlewares() {
 	log.Info().Msg("Registering application middlewares")
 	fuego.Use(app.Server, appMiddleware.LoggingMiddleware)
+}
 
+func (app *Application) checkContextNilValues() {
+	for _, _context := range app.ContextCollection {
+		services := _context.Services
+		for _, service := range services {
+			serviceName := reflect.TypeOf(service).String()
+			if err := app.CheckInterfaceNilValues(service); err != nil {
+				log.Fatal().Msgf("Service %s has nil values: %v", serviceName, err)
+			}
+		}
+
+		controllers := _context.Controllers
+		for _, controller := range controllers {
+			controllerName := reflect.TypeOf(controller).String()
+			if err := app.CheckInterfaceNilValues(controller); err != nil {
+				log.Fatal().Msgf("Controller %s has nil values: %v", controllerName, err)
+			}
+		}
+	}
 }
 
 func (app *Application) Run() {
-
+	log.Info().Msgf("Checking nil values in context collection")
+	app.checkContextNilValues()
 	log.Info().Msg("Starting application...")
 	app.registerAppMiddlewares()
 	fmt.Printf("%s\n", app.AppConfig.AsJson())
