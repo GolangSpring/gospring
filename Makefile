@@ -24,3 +24,6 @@ down:
 
 network:
 	@docker network create $(NETWORK_NAME) || true
+
+run:
+	go run main.go
