@@ -29,3 +29,4 @@ go.work.sum
 **/doc
 **/.idea
 main.go
+prod.env

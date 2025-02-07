@@ -6,14 +6,21 @@ services:
     container_name: postgres_container
     restart: always
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: db
+      POSTGRES_USER: ${POSTGRES_DB_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_DB_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persistent storage for database data
     ports:
-      - "5432:5432"  # Map the container's port 5432 to the host machine
+      - "${POSTGRES_PORT}:5432"  # Map the container's port 5432 to the host machine
+    networks:
+      - dev
 
 volumes:
   postgres_data:
     driver: local
+
+networks:
+  dev:
+    external: true
+    name: dev
